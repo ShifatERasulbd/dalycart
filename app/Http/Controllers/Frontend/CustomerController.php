@@ -18,6 +18,7 @@ use App\Models\Review;
 use App\Models\PaymentGateway;
 use App\Models\SmsGateway;
 use App\Models\GeneralSetting;
+use App\Models\Division;
 use Session;
 use Hash;
 use Auth;
@@ -254,6 +255,7 @@ class CustomerController extends Controller
         $select_charge = ShippingCharge::where('status',1)->first();
         $bkash_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'bkash'])->first();
         $shurjopay_gateway = PaymentGateway::where(['status'=> 1, 'type'=>'shurjopay'])->first();
+         $Divisioin=Division::orderBy('id','desc')->get();
         Session::put('shipping',$select_charge->amount);
        return view('frontEnd.layouts.customer.checkout',compact('shippingcharge', 'bkash_gateway', 'shurjopay_gateway'));
     }
@@ -314,6 +316,9 @@ class CustomerController extends Controller
         $shipping->customer_id =   $customer_id;
         $shipping->name        =   $request->name;
         $shipping->phone       =   $request->phone;
+        $shipping->division   = $request->division;
+        $shipping->city     = $request->city;
+        $shipping->pourasava    =$request->pourasava;
         $shipping->address     =   $request->address;
         $shipping->area        =   $shipping_area->name;
         $shipping->save();

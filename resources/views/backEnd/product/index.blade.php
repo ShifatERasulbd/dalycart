@@ -76,6 +76,7 @@
                                     @endif
 
                                     <a href="{{route('products.edit',$value->id)}}" title="Edit"><i class="fe-edit"></i></a>
+                                    <a href="{{route('products.copy',$value->id)}}" title="Edit">Copy</a>
 
                                     <form method="post" action="{{route('products.destroy')}}" class="d-inline">        
                                         @csrf

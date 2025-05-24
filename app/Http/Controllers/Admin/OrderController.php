@@ -17,6 +17,9 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\User;
 use App\Models\Courierapi;
+use App\Models\Division;
+use App\Models\City;
+use App\Models\Pourosaova;
 use Session;
 use Cart;
 use Toastr;
@@ -528,7 +531,10 @@ class OrderController extends Controller
         ]);
         }
         $cartinfo  = Cart::instance('pos_shopping')->content();
-        return view('backEnd.order.edit',compact('products','cartinfo','shippingcharge','shippinginfo','order'));
+         $divisions=Division::orderBy('id','Desc')->get();
+         $city = City::orderBy('id','ASC')->get();
+         $Pourosaova=Pourosaova::orderBy('id','ASC')->get();
+        return view('backEnd.order.edit',compact('products','cartinfo','shippingcharge','shippinginfo','order','divisions','city','Pourosaova'));
     }
     
     public function order_update(Request $request){
@@ -583,6 +589,10 @@ class OrderController extends Controller
         $shipping->order_id    =   $order->id;
         $shipping->customer_id =   $customer_id;
         $shipping->name        =   $request->name;
+        $shipping->division   =  $request->division;
+        $shipping->city     =$request->city;
+        $shipping->pourasava =$request->pourasava;
+        
         $shipping->phone       =   $request->phone;
         $shipping->address     =   $request->address;
         $shipping->area        =   $shippingfee->name;

@@ -1,3 +1,10 @@
+
+@php
+    $Divisions=App\Models\Division::orderBy('id','ASC')->get();
+    $City=App\Models\City::orderBy('id','ASC')->get();
+    $paurosavaos=App\Models\Pourosaova::orderBy('id','ASC')->get();
+@endphp
+
 @extends('frontEnd.layouts.master') @section('title', 'Customer Checkout') @push('css')
 <link rel="stylesheet" href="{{ asset('public/frontEnd/css/select2.min.css') }}" />
 @endpush @section('content')
@@ -53,6 +60,63 @@
                                             @enderror
                                         </div>
                                     </div>
+                                    
+                                     <div class="col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="area">বিভাগ *</label>
+                                            <select type="area" id="area"
+                                                class="form-control @error('area') is-invalid @enderror" name="division"
+                                                required>
+                                                @foreach ($Divisions as $key => $value)
+                                                    <option value="{{ $value->name }}">{{ $value->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('email')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="area">জেলা *</label>
+                                            <select type="area" id="city"
+                                                class="form-control @error('area') is-invalid @enderror" name="city"
+                                                required>
+                                                @foreach ($City as $key => $value)
+                                                    <option value="{{ $value->name }}">{{ $value->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('email')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                     <div class="col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <label for="area">পৌরসভা *</label>
+                                            <select type="area" id="area"
+                                                class="form-control @error('area') is-invalid @enderror" name="pourasava"
+                                                required>
+                                                @foreach ($paurosavaos as $key => $value)
+                                                    <option value="{{ $value->name }}">{{ $value->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('email')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
                                     <!-- col-end -->
                                     <div class="col-sm-12">
                                         <div class="form-group mb-3">

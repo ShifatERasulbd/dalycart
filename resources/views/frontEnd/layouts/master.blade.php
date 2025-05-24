@@ -82,7 +82,7 @@
     position: fixed;
     right: 20px; /* <- changed from left */
     bottom: 20px;
-    background-color: #fe5200;;
+    background-color: #00657c;
     color: white;
     border-radius: 50%;
     width: 50px;
@@ -112,7 +112,7 @@
 
 
 .chat-header {
-    background-color: #fe5200;;
+    background-color: #00657c;
     color: white;
     padding: 10px;
     font-weight: bold;
@@ -145,7 +145,7 @@
 }
  
  .chat-input-group button {
-    background-color: #fe5200;
+    background-color: #00657c;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -310,7 +310,7 @@
 
         if (sender === 'user') {
             wrapper.style.textAlign = 'right';
-            msgElem.style.background = '#fe5200';
+            msgElem.style.background = '#00657c';
             msgElem.style.color = 'white';
         } else {
             wrapper.style.textAlign = 'left';

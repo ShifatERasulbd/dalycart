@@ -299,6 +299,7 @@ Route::group(['namespace'=>'Admin','middleware' => ['auth','lock','check_refer']
     Route::get('products/create', [ProductController::class,'create'])->name('products.create');
     Route::post('products/save', [ProductController::class,'store'])->name('products.store');
     Route::get('products/{id}/edit', [ProductController::class,'edit'])->name('products.edit');
+     Route::get('products/{id}/copy', [ProductController::class,'copy'])->name('products.copy');
     Route::post('products/update/{id}', [ProductController::class,'update'])->name('products.update');
     Route::post('products/inactive', [ProductController::class,'inactive'])->name('products.inactive');
     Route::post('products/active', [ProductController::class,'active'])->name('products.active');

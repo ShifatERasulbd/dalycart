@@ -98,7 +98,7 @@
               </div>
             </div>
             <!-- col end -->
-            <div class="col-sm-6">
+            <div class="col-sm-4">
               <div class="form-group mb-3">
                 <label for="childcategory_id" class="form-label">Child Categories (Optional)</label>
                 <select class="form-control select2 @error('childcategory_id') is-invalid @enderror" id="childcategory_id" name="childcategory_id" data-placeholder="Choose ...">
@@ -132,10 +132,34 @@
               </div>
             </div>
             <!-- col end -->
+            
+            
+              <div class="col-sm-4">
+              <div class="form-group mb-3">
+                <label for="name_bn" class="form-label">Product SKU</label>
+                <input type="text" class="form-control" name="product_code" id="name_bn" />
+              </div>
+            </div>
+            
+            
             <div class="col-sm-4">
               <div class="form-group mb-3">
                 <label for="purchase_price" class="form-label">Purchase Price *</label>
                 <input type="text" class="form-control @error('purchase_price') is-invalid @enderror" name="purchase_price" value="{{ old('purchase_price') }}" id="purchase_price" required />
+                @error('purchase_price')
+                <span class="invalid-feedback" role="alert">
+                  <strong>{{ $message }}</strong>
+                </span>
+                @enderror
+              </div>
+            </div>
+            <!-- col-end -->
+            
+             <!-- col end -->
+            <div class="col-sm-4">
+              <div class="form-group mb-3">
+                <label for="purchase_price" class="form-label">Selling Price *</label>
+                <input type="text" class="form-control @error('purchase_price') is-invalid @enderror" name="new_price" value="{{ old('purchase_price') }}" id="purchase_price" required />
                 @error('purchase_price')
                 <span class="invalid-feedback" role="alert">
                   <strong>{{ $message }}</strong>

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Util\BkashCredential;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Payment;
@@ -21,6 +24,7 @@ class BkashController extends Controller
     private $app_secret;
     private $username;
     private $password;
+    private $isSandbox;
 
     public function __construct()
     {
@@ -31,6 +35,7 @@ class BkashController extends Controller
             $this->app_secret = $bkash_gateway->app_secret; // bKash Merchant API APP SECRET
             $this->username = $bkash_gateway->username; // bKash Merchant API USERNAME
             $this->password = $bkash_gateway->password; // bKash Merchant API PASSWORD
+            $this->isSandbox = $this->checkIfSandbox($this->base_url);
         } else {
             $this->base_url = 'https://tokenized.pay.bka.sh/v1.2.0-beta';
             $this->app_key = ''; // bKash Merchant API APP KEY
@@ -40,6 +45,11 @@ class BkashController extends Controller
         }
     }
 
+
+    private function checkIfSandbox($url): bool
+  {
+    return str_contains($url, 'sandbox');
+   }
 
     public function authHeaders(){
         return array(
@@ -62,24 +72,171 @@ class BkashController extends Controller
         return $response;
     }
 
+    // public function grant()
+    // {
+    //     $header = array(
+    //             'Content-Type:application/json',
+    //             'username:'.$this->username,
+    //             'password:'.$this->password
+    //             );
+    //     $header_data_json=json_encode($header);
+
+    //     $body_data = array('app_key'=> $this->app_key, 'app_secret'=>$this->app_secret);
+    //     $body_data_json=json_encode($body_data);
+
+    //     $response = $this->curlWithBody('/tokenized/checkout/token/grant',$header,'POST',$body_data_json);
+        
+    //     $token = json_decode($response)->id_token;
+
+    //     return $token;
+    // }
+    
+    
+     public function getIdTokenFromRefreshToken($refresh_token)
+    {
+
+        $header = array(
+            'Content-Type:application/json',
+            'username:' . $this->username,
+            'password:' . $this->password,
+        );
+
+        $body_data = array('app_key' => $this->app_key, 'app_secret' => $this->app_secret, 'refresh_token' => $refresh_token);
+
+        $response = $this->curlWithBody('/tokenized/checkout/token/refresh', $header, 'POST', json_encode($body_data));
+
+        $idToken = json_decode($response)->id_token;
+
+        return $idToken;
+
+    }
+
     public function grant()
     {
+
+        if (!Schema::hasTable('bkash_token')) {
+            DB::beginTransaction();
+            Schema::create('bkash_token', function ($table) {
+                $table->boolean('sandbox_mode')->notNullable();
+                $table->bigInteger('id_expiry')->notNullable();
+                $table->string('id_token', 2048)->notNullable();
+                $table->bigInteger('refresh_expiry')->notNullable();
+                $table->string('refresh_token', 2048)->notNullable();
+            });
+            $insertedRows = DB::table('bkash_token')->insert([
+                'sandbox_mode' => 1,
+                'id_expiry' => 0,
+                'id_token' => 'id_token',
+                'refresh_expiry' => 0,
+                'refresh_token' => 'refresh_token',
+            ]);
+
+            if ($insertedRows > 0) {
+
+                // echo 'Row inserted successfully.';
+            } else {
+                echo 'Error inserting row.';
+            }
+
+            $insertedRows = DB::table('bkash_token')->insert([
+                'sandbox_mode' => 0,
+                'id_expiry' => 0,
+                'id_token' => 'id_token',
+                'refresh_expiry' => 0,
+                'refresh_token' => 'refresh_token',
+            ]);
+
+            if ($insertedRows > 0) {
+                // echo 'Row inserted successfully.';
+
+            } else {
+                echo 'Error inserting row.';
+            }
+            // DB::commit();
+        }
+
+       
+
+        $sandbox = $this->isSandbox;
+
+        $tokenData = DB::table('bkash_token')->where('sandbox_mode', $sandbox)->first();
+
+        if ($tokenData) {
+
+            // Access the token data
+            $idExpiry = $tokenData->id_expiry;
+            $idToken = $tokenData->id_token;
+            $refreshExpiry = $tokenData->refresh_expiry;
+            $refreshToken = $tokenData->refresh_token;
+
+            if ($idExpiry > time()) {
+                Log::info("Id token from database: " . $idToken);
+
+                return $idToken;
+            }
+            if ($refreshExpiry > time()) {
+                $idToken = $this->getIdTokenFromRefreshToken($refreshToken);
+                $updatedRows = DB::table('bkash_token')
+                    ->where('sandbox_mode', $sandbox)
+                    ->update([
+                        'id_expiry' => time() + 3600, // Set new expiry time
+                        'id_token' => $idToken,
+                    ]);
+
+                Log::info("Id token from refresh api: " . $idToken);
+
+                if ($updatedRows > 0) {
+                  ;
+                    //echo 'Rows updated successfully.';
+                } else {
+                    //echo 'Error updating rows.';
+                }
+                // dd("Id token from refresh api: ".$idToken);
+                return $idToken;
+            }
+
+        } else {
+            echo 'Token not found.';
+        }
+
         $header = array(
-                'Content-Type:application/json',
-                'username:'.$this->username,
-                'password:'.$this->password
-                );
-        $header_data_json=json_encode($header);
+            'Content-Type:application/json',
+            'username:' . $this->username,
+            'password:' . $this->password,
+        );
 
-        $body_data = array('app_key'=> $this->app_key, 'app_secret'=>$this->app_secret);
-        $body_data_json=json_encode($body_data);
+        $body_data = array('app_key' => $this->app_key, 'app_secret' => $this->app_secret);
 
-        $response = $this->curlWithBody('/tokenized/checkout/token/grant',$header,'POST',$body_data_json);
-        
-        $token = json_decode($response)->id_token;
+        $response = $this->curlWithBody('/tokenized/checkout/token/grant', $header, 'POST', json_encode($body_data));
 
-        return $token;
+        //dd($response);
+
+        $idToken = json_decode($response)->id_token;
+
+        $updatedRows = DB::table('bkash_token')
+            ->where('sandbox_mode', $sandbox)
+            ->update([
+                'id_expiry' => time() + 3600, // Set new expiry time
+                'id_token' => $idToken,
+                'refresh_expiry' => time() + 864000,
+                'refresh_token' => json_decode($response)->refresh_token,
+            ]);
+
+        if ($updatedRows > 0) {
+         
+            //echo 'Rows updated successfully.';
+        } else {
+            //echo 'Error updating rows.';
+        }
+        // dd("Id token from grant api: ".$idToken);
+        return $idToken;
+
     }
+
+    
+    
+    
+    
 
     public function create(Request $request)
     {     

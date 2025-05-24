@@ -68,6 +68,7 @@ class ProductController extends Controller
       public function store(Request $request)
     {
       
+      
         $product_id = Product::insertGetId([
             'name' => $request->name,
             'name_bn'=>$request->name_bn,
@@ -75,11 +76,11 @@ class ProductController extends Controller
             'name_bn' => $request->name_bn,
             'category_id' => $request->category_id,
             'slug' => strtolower(str_replace(' ', '-', $request->name)),
-
+            'new_price'=>$request->new_price,
             'subcategory_id' => $request->subcategory_id,
             'childcategory_id' => $request->childcategory_id,
             'brand_id' => $request->brand_id,
-            'product_code' => 'p1234',
+            'product_code' => $request->product_code,
             
 
             'purchase_price' => $request->purchase_price,
@@ -115,8 +116,8 @@ class ProductController extends Controller
 
         if (isset($variation['image']) && $variation['image']) {
             $imageName = time() . '_' . uniqid() . '.' . $variation['image']->getClientOriginalExtension();
-            $variation['image']->move($uploadPath, $imageName);
-            $imagePath = 'public/uploads/product/' . $imageName;
+             $variation['image']->move($uploadPath, $imageName);
+             $imagePath = 'public/uploads/product/' . $imageName;
         }
         // dd($variation['color']);
         ProductImage::create([
@@ -149,23 +150,10 @@ class ProductController extends Controller
     
     public function update(Request $request, $id)
 {
-    // Validate main product fields
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'purchase_price' => 'required|numeric|min:0',
-        // Add other validations as needed...
-        
-        // Validate variations array
-        'variations.*.color' => 'required|exists:colors,id',
-        'variations.*.size' => 'required|exists:sizes,id',
-        'variations.*.price' => 'required|numeric|min:0',
-        'variations.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    ]);
-
+    
     // Find the product
     $product = Product::findOrFail($id);
-
+    
     // Update product main fields
     $product->update([
         'name' => $request->name,
@@ -187,73 +175,61 @@ class ProductController extends Controller
         'topsale' => $request->topsale ? 1 : 0,
     ]);
 
-    $uploadPath = public_path('uploads/product/');
+     $uploadPath = public_path('uploads/product/');
     if (!File::exists($uploadPath)) {
         File::makeDirectory($uploadPath, 0755, true);
     }
 
     // Collect existing variation IDs sent in the form
-    $variationIdsInRequest = collect($request->variations)->pluck('id')->filter()->toArray();
+     $variationIdsInRequest = collect($request->variations)->pluck('id')->filter()->toArray();
 
     // Delete variations that are NOT in the request (removed by user)
     ProductImage::where('product_id', $product->id)
                 ->whereNotIn('id', $variationIdsInRequest)
                 ->delete();
 
-    // Loop through each variation from the request
-    foreach ($request->variations as $variationData) {
-        // If id exists, update existing record
-        if (!empty($variationData['id'])) {
-            $productImage = ProductImage::find($variationData['id']);
-            if (!$productImage) {
-                continue; // skip if not found
-            }
+    foreach ($request->variations as $variation) {
+        $imagePath = null;
 
-            // Handle image upload
-            if (isset($variationData['image']) && $variationData['image'] instanceof \Illuminate\Http\UploadedFile) {
-                // Delete old image file if exists
-                if ($productImage->image && File::exists(public_path($productImage->image))) {
-                    File::delete(public_path($productImage->image));
-                }
-
-                $imageName = time() . '_' . uniqid() . '.' . $variationData['image']->getClientOriginalExtension();
-                $variationData['image']->move($uploadPath, $imageName);
-                $imagePath = 'public/uploads/product/' . $imageName;
-            } else {
-                $imagePath = $productImage->image; // keep old image if no new uploaded
-            }
-
-            // Update variation
-            $productImage->update([
-                'color' => $variationData['color'],
-                'size' => $variationData['size'],
-                'price' => $variationData['price'],
-                'image' => $imagePath,
-            ]);
+        if (isset($variation['image']) && $variation['image']) {
+            $imageName = time() . '_' . uniqid() . '.' . $variation['image']->getClientOriginalExtension();
+             $variation['image']->move($uploadPath, $imageName);
+             $imagePath = 'public/uploads/product/' . $imageName;
         }
-        else {
-            // New variation, create it
-            $imagePath = null;
-            if (isset($variationData['image']) && $variationData['image'] instanceof \Illuminate\Http\UploadedFile) {
-                $imageName = time() . '_' . uniqid() . '.' . $variationData['image']->getClientOriginalExtension();
-                $variationData['image']->move($uploadPath, $imageName);
-                $imagePath = 'public/uploads/product/' . $imageName;
-            }
-
-            ProductImage::create([
-                'product_id' => $product->id,
-                'color' => $variationData['color'],
-                'size' => $variationData['size'],
-                'price' => $variationData['price'],
-                'image' => $imagePath,
-            ]);
-        }
+        // dd($variation['color']);
+        // return  $variation['image'];
+        ProductImage::create([
+            'product_id' => $id,
+            'color' => $variation['color'],
+            'size' => $variation['size'],
+            'price' => $variation['price'],
+            'image' => $imagePath,
+        ]);
     }
+
 
     return redirect()->route('products.index')->with('success', 'Product updated successfully.');
 }
 
- 
+
+    public function copy($id)
+{
+    $product = Product::findOrFail($id);
+    $product = Product::with('category','subcategory','childcategory','brand')->findOrFail($id);
+    // getting the values from productImages
+    // return $product->productimages->pluck('image')->toArray();
+    $product_images=Productimage::where('product_id',$id)->get();
+    // return ;
+    $categories = Category::all();
+    $subcategories = Subcategory::all();
+    $brands = Brand::all();
+    $colors = Color::all();
+    $sizes = Size::all(); // Optional
+
+    return view('backEnd.product.copy', compact('product', 'categories', 'subcategories', 'brands', 'colors', 'sizes','product_images'));
+}
+
+
     public function inactive(Request $request)
     {
         $inactive = Product::find($request->hidden_id);

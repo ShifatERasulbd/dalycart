@@ -69,7 +69,7 @@
               <div class="form-group mb-3">
                 <label for="category_id" class="form-label">Categories *</label>
                 <select class="form-control select2 @error('category_id') is-invalid @enderror" name="category_id" value="{{ old('category_id') }}" id="category_id" required>
-                  <option value="">{{ $product->category->name}}</option>
+                  <option value="{{ $product->category->id}}">{{ $product->category->name}}</option>
                   @foreach($categories as $category)
                   <option value="{{$category->id}}">{{$category->name}}</option>
                   @endforeach
@@ -85,9 +85,9 @@
             <div class="col-sm-6">
               <div class="form-group mb-3">
                 <label for="subcategory_id" class="form-label">SubCategories (Optional)</label>
-                <select class="form-control select2 @error('subcategory_id') is-invalid @enderror" id="subcategory_id" name="subcategory_id" data-placeholder="{{$product->subcategory->subcategoryName}}">
+                <select class="form-control select2 @error('subcategory_id') is-invalid @enderror" id="subcategory_id" name="subcategory_id" data-placeholder="adad">
                   <optgroup>
-                    <option value="">Select..</option>
+                    <option value="{{$product->subcategory->id}}">{{$product->subcategory->subcategoryName}}</option>
                   </optgroup>
                 </select>
                 @error('subcategory_id')
@@ -103,7 +103,7 @@
                 <label for="childcategory_id" class="form-label">Child Categories (Optional)</label>
                 <select class="form-control select2 @error('childcategory_id') is-invalid @enderror" id="childcategory_id" name="childcategory_id" data-placeholder="{{ $product->childcategory->childcategoryName }}">
                   <optgroup>
-                    <option value="">Select..</option>
+                    <option value="{{ $product->childcategory->id }}">{{ $product->childcategory->childcategoryName }}</option>
                   </optgroup>
                 </select>
                 @error('childcategory_id')
@@ -132,10 +132,32 @@
               </div>
             </div>
             <!-- col end -->
+            
+            <div class="col-sm-4">
+              <div class="form-group mb-3">
+                <label for="name_bn" class="form-label">Product SKU</label>
+                <input type="text" class="form-control" name="product_code" value="{{ $product->product_code }}" id="name_bn" />
+              </div>
+            </div>
+            
             <div class="col-sm-4">
               <div class="form-group mb-3">
                 <label for="purchase_price" class="form-label">Purchase Price *</label>
                 <input type="text" class="form-control @error('purchase_price') is-invalid @enderror" name="purchase_price" value="{{ $product->purchase_price }}" id="purchase_price" required />
+                @error('purchase_price')
+                <span class="invalid-feedback" role="alert">
+                  <strong>{{ $message }}</strong>
+                </span>
+                @enderror
+              </div>
+            </div>
+            <!-- col-end -->
+            
+                <!-- col end -->
+            <div class="col-sm-4">
+              <div class="form-group mb-3">
+                <label for="purchase_price" class="form-label">Selling Price *</label>
+                <input type="text" class="form-control @error('purchase_price') is-invalid @enderror" name="new_price" value="{{ $product->new_price }}" id="purchase_price" required />
                 @error('purchase_price')
                 <span class="invalid-feedback" role="alert">
                   <strong>{{ $message }}</strong>
@@ -197,7 +219,7 @@
                 <input type="number" name="variations[{{ $index }}][price]" class="form-control mb-2"
                        value="{{ $variation->price }}" placeholder="Price" required>
 
-                <input type="file" name="variations[{{ $index }}][image]" class="form-control image-input"
+                <input type="file" name="variations[{{ $index }}][image]" value="{{ asset($variation->image) }}" class="form-control image-input"
                        accept="image/*" onchange="previewImage(this)">
                 <img src="{{ asset($variation->image) }}" alt="Image Preview" class="img-preview mt-2"
                      style="max-height: 100px;">
@@ -518,5 +540,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 </script>
-
 @endsection
+
+
+
+

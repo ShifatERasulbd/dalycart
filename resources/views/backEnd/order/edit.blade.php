@@ -122,6 +122,58 @@
                                     </div>
                                 </div>
                                 <!-- col-end -->
+                                
+                                 <!-- col-end -->
+                                <div class="col-sm-12">
+                                  <div class="form-group mb-3">
+                                    <label for="category_id" class="form-label">Division *</label>
+                                    <select class="form-control select2 @error('category_id') is-invalid @enderror" name="division"  id="category_id" required>
+                                        
+                                      <option value="{{$shippinginfo->division}}">{{$shippinginfo->division}}</option>
+                                      @foreach($divisions as $division)
+                                         <option value="{{ $division->name }}">{{ $division->name }}</option>
+                                     @endforeach
+                                   
+                                    </select>
+                                   
+                                  </div>
+                                </div>
+                                <!-- col end -->
+                                
+                                 <div class="col-sm-12">
+                                  <div class="form-group mb-3">
+                                    <label for="category_id" class="form-label">District *</label>
+                                    <select class="form-control select2 @error('category_id') is-invalid @enderror" name="city"  id="category_id" required>
+                                        
+                                      <option value="{{$shippinginfo->city}}">{{$shippinginfo->city}}</option>
+                                      @foreach($city as $city)
+                                         <option value="{{ $city->name }}">{{ $city->name }}</option>
+                                     @endforeach
+                                   
+                                    </select>
+                                   
+                                  </div>
+                                </div>
+                                <!-- col end -->
+                                
+                                
+                                 <div class="col-sm-12">
+                                  <div class="form-group mb-3">
+                                    <label for="category_id" class="form-label">Pourasava *</label>
+                                    <select class="form-control select2 @error('category_id') is-invalid @enderror" name="city"  id="pourasava" required>
+                                        
+                                      <option value="{{$shippinginfo->city}}">{{$shippinginfo->city}}</option>
+                                      @foreach($Pourosaova as $Pourosaova)
+                                         <option value="{{ $Pourosaova->name }}">{{ $Pourosaova->name }}</option>
+                                     @endforeach
+                                   
+                                    </select>
+                                   
+                                  </div>
+                                </div>
+                                <!-- col end -->
+            
+            
                                 <div class="col-sm-12">
                                     <div class="form-group mb-3">
                                         <input type="address" placeholder="Address" id="address" class="form-control @error('address') is-invalid @enderror" name="address" value="{{$shippinginfo->address}}"  required>
